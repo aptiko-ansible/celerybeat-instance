@@ -1,0 +1,5 @@
+---
+- name: Restart celery beat {{ instance_name }}
+  supervisorctl:
+    name: "celerybeat-{{ instance_name }}"
+    state: restarted

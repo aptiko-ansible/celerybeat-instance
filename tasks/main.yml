@@ -1,0 +1,44 @@
+---
+- name: Create group {{ user }}
+  group: name={{ user }} system=yes
+
+- name: Create user {{ user }}
+  user:
+    name: "{{ user }}"
+    group: "{{ user }}"
+    system: yes
+
+- name: Create celery log directory
+  file:
+    name: "/var/log/celery"
+    state: directory
+
+- name: Create celery beat {{ instance_name }} log file
+  command: >
+    touch /var/log/celery/beat-{{ instance_name }}.log
+    creates=/var/log/celery/beat-{{ instance_name }}.log
+
+- name: Ensure /var/log/celery/beat-{{ instance_name }}.log has correct permissions
+  file:
+    name: /var/log/celery/beat-{{ instance_name }}.log
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
+- name: Create celery lib directory
+  file:
+    name: "/var/lib/celery"
+    state: directory
+
+- name: Create /var/lib/celery/{{ instance_name }} directory
+  file:
+    name: "/var/lib/celery/{{ instance_name }}"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
+- name: Configure supervisor
+  template:
+    src: supervisor.conf
+    dest: /etc/supervisor/conf.d/celerybeat-{{ instance_name }}.conf
+  notify:
+  - Restart celery beat {{ instance_name }}
